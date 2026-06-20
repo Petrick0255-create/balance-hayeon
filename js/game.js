@@ -64,10 +64,7 @@ let dragging = false;
 let lastX = 0;
 
 function getViewportHeight() {
-  if (window.visualViewport) {
-    return window.visualViewport.height;
-  }
-  return window.innerHeight;
+  return window.visualViewport ? window.visualViewport.height : window.innerHeight;
 }
 
 function getHeaderHeight() {
@@ -79,7 +76,6 @@ function setLayoutSize() {
   const headerH = getHeaderHeight();
 
   let panelH = 250;
-
   if (vh < 700) panelH = 230;
   if (vh < 620) panelH = 215;
 
@@ -285,7 +281,9 @@ function getBeamLength() {
 function getBeamBend() {
   const weights = getWeights();
   const totalWeight = weights.left + weights.right;
-  return 4 + totalWeight * 4;
+
+  // 양끝이 아래로 처지는 정도
+  return 8 + totalWeight * 4;
 }
 
 function beamYAt(x) {
@@ -293,8 +291,8 @@ function beamYAt(x) {
   const bend = getBeamBend();
   const t = x / (beamLength / 2);
 
-  // 가운데 0, 양끝 bend
-  return bend * (t * t);
+  // 가운데는 0, 양끝은 아래로 +bend
+  return bend * t * t;
 }
 
 function drawCurvedBeam() {
@@ -311,12 +309,12 @@ function drawCurvedBeam() {
   // 그림자
   ctx.beginPath();
   ctx.moveTo(-beamLength / 2, bend + 5);
-  ctx.quadraticCurveTo(0, 8, beamLength / 2, bend + 5);
+  ctx.quadraticCurveTo(0, 5, beamLength / 2, bend + 5);
   ctx.strokeStyle = "rgba(0,0,0,0.22)";
   ctx.lineWidth = 30;
   ctx.stroke();
 
-  // 바깥 목재
+  // 바깥 목재: 가운데가 위, 양끝이 아래
   ctx.beginPath();
   ctx.moveTo(-beamLength / 2, bend);
   ctx.quadraticCurveTo(0, 0, beamLength / 2, bend);
@@ -396,13 +394,13 @@ function drawHayeon() {
   ctx.translate(CX, CY);
   ctx.rotate(angle);
 
-  // 막대 가운데 바로 위
+  // 막대 중앙 꼭대기 위에 배치
   ctx.translate(0, -6);
 
   const lean = -angle * 0.85;
   ctx.rotate(lean);
 
-  const size = Math.min(120, H * 0.30);
+  const size = Math.min(112, H * 0.28);
 
   ctx.shadowColor = "rgba(0,0,0,0.22)";
   ctx.shadowBlur = 8;
@@ -411,7 +409,7 @@ function drawHayeon() {
   const img = hayeonCleanImg || hayeonImg;
 
   if (img.complete || hayeonCleanImg) {
-    ctx.drawImage(img, -size / 2, -size + 26, size, size);
+    ctx.drawImage(img, -size / 2, -size + 24, size, size);
   } else {
     ctx.fillStyle = "#84cc16";
     ctx.beginPath();
@@ -456,7 +454,7 @@ function drawStateText() {
     ctx.fillText("시작 버튼을 누르세요", CX, 42);
 
     ctx.font = `${Math.min(15, W * 0.038)}px Arial`;
-    ctx.fillText("안정추가 많을수록 막대가 아래로 휘어 안정해집니다.", CX, 70);
+    ctx.fillText("양끝 안정추가 막대를 활처럼 휘게 해 안정시킵니다.", CX, 70);
   }
 
   if (state === "gameover") {
