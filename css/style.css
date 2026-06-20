@@ -96,25 +96,6 @@ canvas {
   color: #7c2d12;
 }
 
-.tap-guide {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.tap-guide div {
-  flex: 1;
-  height: 54px;
-  border-radius: 18px;
-  background: rgba(30, 41, 59, 0.1);
-  border: 2px dashed rgba(30, 41, 59, 0.18);
-  color: #334155;
-  font-weight: 900;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .buttons {
   display: flex;
   gap: 10px;

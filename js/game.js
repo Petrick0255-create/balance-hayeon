@@ -269,39 +269,33 @@ function drawBackground() {
 }
 
 function drawTapZones() {
-  ctx.save();
-
-  ctx.globalAlpha = 0.08;
-  ctx.fillStyle = "#1e293b";
-  ctx.fillRect(0, 0, W / 2, H);
-  ctx.fillRect(W / 2, 0, W / 2, H);
-
-  ctx.globalAlpha = 0.22;
-  ctx.fillStyle = "#334155";
-  ctx.font = "bold 34px Arial";
-  ctx.textAlign = "center";
-  ctx.fillText("◀", W * 0.18, H * 0.52);
-  ctx.fillText("▶", W * 0.82, H * 0.52);
-
   if (tapFlash) {
+
     const elapsed = performance.now() - tapFlash.time;
-    const alpha = Math.max(0, 1 - elapsed / 180);
+    const alpha = Math.max(0, 1 - elapsed / 120);
 
     if (alpha > 0) {
-      ctx.globalAlpha = alpha * 0.22;
-      ctx.fillStyle = tapFlash.side === "left" ? "#38bdf8" : "#fb923c";
+
+      ctx.save();
+
+      ctx.globalAlpha = alpha * 0.15;
+      ctx.fillStyle =
+        tapFlash.side === "left"
+          ? "#38bdf8"
+          : "#fb923c";
 
       if (tapFlash.side === "left") {
         ctx.fillRect(0, 0, W / 2, H);
       } else {
         ctx.fillRect(W / 2, 0, W / 2, H);
       }
+
+      ctx.restore();
+
     } else {
       tapFlash = null;
     }
   }
-
-  ctx.restore();
 }
 
 function drawPlatform() {
@@ -450,9 +444,8 @@ function drawStateText() {
     ctx.font = `bold ${Math.min(28, W * 0.075)}px Arial`;
     ctx.fillText("화면을 터치해 시작", CX, 42);
 
-    ctx.font = `${Math.min(15, W * 0.038)}px Arial`;
-    ctx.fillText("왼쪽/오른쪽을 톡톡 쳐서 균형을 잡으세요.", CX, 70);
-  }
+    ctx.fillText("터치하여 시작",CX,70
+  );
 
   if (state === "gameover") {
     ctx.fillStyle = "#dc2626";
