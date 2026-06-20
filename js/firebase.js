@@ -28,30 +28,41 @@ function getWeekKey() {
   const now = new Date();
   const year = now.getFullYear();
 
-  const firstDay = new Date(year, 0, 1);
-  const days = Math.floor((now - firstDay) / 86400000);
-  const week = Math.ceil((days + firstDay.getDay() + 1) / 7);
+  // 주차 계산 꼬임 방지용 단순 주차 키
+  const week = Math.floor(now.getTime() / (7 * 24 * 60 * 60 * 1000));
 
   return `${year}-W${week}`;
 }
 
 export async function saveScore(score) {
-  await addDoc(collection(db, "rankings"), {
+  const data = {
     score: Number(score),
     weekKey: getWeekKey(),
     createdAt: serverTimestamp()
-  });
+  };
+
+  console.log("저장 시도:", data);
+
+  await addDoc(collection(db, "rankings"), data);
+
+  console.log("저장 성공");
 }
 
 export async function getTop5() {
+  const weekKey = getWeekKey();
+
+  console.log("랭킹 조회 weekKey:", weekKey);
+
   const q = query(
     collection(db, "rankings"),
-    where("weekKey", "==", getWeekKey()),
+    where("weekKey", "==", weekKey),
     orderBy("score", "desc"),
     limit(5)
   );
 
   const snapshot = await getDocs(q);
+
+  console.log("랭킹 개수:", snapshot.size);
 
   return snapshot.docs.map(doc => doc.data());
 }
