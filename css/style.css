@@ -38,7 +38,6 @@ header {
 h1 {
   margin: 0;
   font-size: 23px;
-  line-height: 1.15;
 }
 
 header p {
@@ -69,63 +68,32 @@ main {
 canvas {
   width: 100vw;
   max-width: 560px;
-  height: var(--canvas-height, 360px);
-  flex: 0 0 var(--canvas-height, 360px);
+  height: var(--canvas-height, 420px);
+  flex: 0 0 var(--canvas-height, 420px);
   background: radial-gradient(circle at center, rgba(255,255,255,0.9), rgba(219,234,254,0.35));
 }
 
 .panel {
   width: min(94vw, 560px);
-  height: var(--panel-height, 250px);
-  flex: 0 0 var(--panel-height, 250px);
-  padding: 8px 12px 10px;
+  height: var(--panel-height, 170px);
+  flex: 0 0 var(--panel-height, 170px);
+  padding: 10px 12px 12px;
   overflow: hidden;
 }
 
 .timer {
   text-align: center;
   font-weight: 900;
-  margin-bottom: 7px;
-  line-height: 1;
+  margin-bottom: 10px;
 }
 
 .timer strong {
-  font-size: 28px;
+  font-size: 30px;
   color: #7c2d12;
 }
 
-.weights {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 9px;
-}
-
-.weights div {
-  flex: 1;
-  background: rgba(255,255,255,0.84);
-  border-radius: 16px;
-  padding: 8px;
-  box-shadow: 0 5px 14px rgba(15,23,42,0.12);
-}
-
-label {
-  display: block;
-  font-size: 12px;
-  font-weight: 800;
-  margin-bottom: 5px;
-}
-
-select {
-  width: 100%;
-  padding: 8px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-weight: 800;
-  background: white;
-}
-
 #controlPad {
-  height: 54px;
+  height: 58px;
   border-radius: 999px;
   background: linear-gradient(135deg, #1e293b, #334155);
   color: white;
@@ -145,14 +113,14 @@ select {
 .buttons {
   display: flex;
   gap: 10px;
-  margin-top: 9px;
+  margin-top: 10px;
 }
 
 button {
   flex: 1;
   border: none;
   border-radius: 999px;
-  padding: 11px;
+  padding: 12px;
   font-weight: 900;
   font-size: 15px;
   background: white;
@@ -163,32 +131,4 @@ button {
 #startBtn {
   background: #fb923c;
   color: white;
-}
-
-@media (max-height: 700px) {
-  header {
-    height: 62px;
-    flex-basis: 62px;
-  }
-
-  h1 {
-    font-size: 20px;
-  }
-
-  .score-box {
-    font-size: 14px;
-    padding: 8px 12px;
-  }
-
-  .timer strong {
-    font-size: 24px;
-  }
-
-  #controlPad {
-    height: 48px;
-  }
-
-  button {
-    padding: 9px;
-  }
 }
