@@ -167,6 +167,7 @@ async function gameOver() {
   try {
     await saveScore(survivalTime);
     weeklyTop5 = await getTop5();
+    console.log("TOP5", weeklyTop5);
   } catch (err) {
     console.error("랭킹 저장/불러오기 실패:", err);
     weeklyTop5 = [];
@@ -479,33 +480,53 @@ function drawStateText() {
   }
 
   if (state === "gameover") {
+
     ctx.fillStyle = "#dc2626";
     ctx.font = "bold 30px Arial";
     ctx.fillText("GAME OVER", CX, 42);
 
     ctx.fillStyle = "#111827";
     ctx.font = "bold 18px Arial";
-    ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 70);
-    ctx.fillText("다시 터치하면 재시작", CX, 96);
+    ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 72);
 
-    ctx.fillStyle = "#111827";
+    ctx.font = "15px Arial";
+    ctx.fillText("터치하면 다시 시작", CX, 98);
+
+    // TOP5
+    ctx.fillStyle = "#1e293b";
     ctx.font = "bold 16px Arial";
-    ctx.fillText("이번 주 TOP 5", CX, 128);
+    ctx.fillText("🏆 이번 주 TOP 5", CX, 128);
 
     ctx.font = "14px Arial";
 
     if (rankingLoading) {
-      ctx.fillText("랭킹 불러오는 중...", CX, 154);
+
+      ctx.fillText(
+        "랭킹 불러오는 중...",
+        CX,
+        152
+      );
+
     } else if (weeklyTop5.length === 0) {
-      ctx.fillText("아직 기록이 없습니다", CX, 154);
+
+      ctx.fillText(
+        "기록 없음",
+        CX,
+        152
+      );
+
     } else {
+
       weeklyTop5.forEach((item, i) => {
+
         ctx.fillText(
-          `${i + 1}위 ${Number(item.score).toFixed(2)}초`,
+          `${i + 1}위   ${Number(item.score).toFixed(2)}초`,
           CX,
-          154 + i * 22
+          152 + i * 18
         );
+
       });
+
     }
   }
 }
