@@ -1,3 +1,4 @@
+import { saveScore, getTop5 } from "./firebase.js";
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -50,6 +51,9 @@ let hitForce = 0;
 let fallingBall = null;
 
 let tapFlash = null;
+
+let weeklyTop5 = [];
+let rankingLoading = false;
 
 let bestTime = Number(localStorage.getItem("balanceHayeonBest") || 0);
 bestTimeText.textContent = bestTime.toFixed(2);
@@ -118,6 +122,8 @@ function resetGame() {
   fallingBall = null;
   tapFlash = null;
   timeText.textContent = "0.00";
+  weeklyTop5 = [];
+  rankingLoading = false;
 }
 
 function startGame() {
@@ -132,7 +138,9 @@ function startGame() {
   startTime = performance.now();
 }
 
-function gameOver() {
+async function gameOver() {
+  if (state === "gameover") return;
+
   state = "gameover";
   vibrate(80);
 
@@ -141,6 +149,18 @@ function gameOver() {
     localStorage.setItem("balanceHayeonBest", bestTime);
     bestTimeText.textContent = bestTime.toFixed(2);
   }
+
+  rankingLoading = true;
+
+  try {
+    await saveScore(survivalTime);
+    weeklyTop5 = await getTop5();
+  } catch (err) {
+    console.error("랭킹 저장/불러오기 실패:", err);
+    weeklyTop5 = [];
+  }
+
+  rankingLoading = false;
 }
 
 function tapImpulse(side) {
@@ -456,6 +476,25 @@ function drawStateText() {
     ctx.font = "bold 18px Arial";
     ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 70);
     ctx.fillText("다시 터치하면 재시작", CX, 96);
+    ctx.fillStyle = "#111827";
+    ctx.font = "bold 16px Arial";
+    ctx.fillText("이번 주 TOP 5", CX, 128);
+    
+    ctx.font = "14px Arial";
+
+    if (rankingLoading) {
+      ctx.fillText("랭킹 불러오는 중...", CX, 154);
+    } else if (weeklyTop5.length === 0) {
+      ctx.fillText("아직 기록이 없습니다", CX, 154);
+    } else {
+      weeklyTop5.forEach((item, i) => {
+        ctx.fillText(
+          `${i + 1}위  ${Number(item.score).toFixed(2)}초`,
+          CX,
+          154 + i * 22
+        );
+      });
+    }
   }
 }
 
