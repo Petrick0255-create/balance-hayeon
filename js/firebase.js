@@ -26,12 +26,15 @@ const db = getFirestore(app);
 
 function getWeekKey() {
   const now = new Date();
-  const year = now.getFullYear();
 
-  // 주차 계산 꼬임 방지용 단순 주차 키
-  const week = Math.floor(now.getTime() / (7 * 24 * 60 * 60 * 1000));
+  const start = new Date(now.getFullYear(), 0, 1);
+  const diff = now - start;
+  const oneDay = 1000 * 60 * 60 * 24;
 
-  return `${year}-W${week}`;
+  const dayOfYear = Math.floor(diff / oneDay) + 1;
+  const week = Math.ceil(dayOfYear / 7);
+
+  return `${now.getFullYear()}-W${week}`;
 }
 
 export async function saveScore(score) {
