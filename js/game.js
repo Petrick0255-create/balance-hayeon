@@ -16,6 +16,34 @@ let W, H, CX, CY;
 const hayeonImg = new Image();
 hayeonImg.src = "assets/images/hayeon.png";
 
+let hayeonCleanImg = null;
+
+hayeonImg.onload = () => {
+  const temp = document.createElement("canvas");
+  const tctx = temp.getContext("2d");
+
+  temp.width = hayeonImg.width;
+  temp.height = hayeonImg.height;
+
+  tctx.drawImage(hayeonImg, 0, 0);
+
+  const imgData = tctx.getImageData(0, 0, temp.width, temp.height);
+  const data = imgData.data;
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    if (r > 225 && g > 225 && b > 225) {
+      data[i + 3] = 0;
+    }
+  }
+
+  tctx.putImageData(imgData, 0, 0);
+  hayeonCleanImg = temp;
+};
+
 let state = "ready";
 
 let angle = 0;
@@ -51,6 +79,21 @@ function resize() {
 
 window.addEventListener("resize", resize);
 resize();
+
+function syncWeightTotal(changedSide) {
+  const left = Number(leftWeightSelect.value);
+  const right = Number(rightWeightSelect.value);
+
+  // 총 안정추는 항상 6kg
+  if (changedSide === "left") {
+    rightWeightSelect.value = String(6 - left);
+  } else {
+    leftWeightSelect.value = String(6 - right);
+  }
+}
+
+leftWeightSelect.addEventListener("change", () => syncWeightTotal("left"));
+rightWeightSelect.addEventListener("change", () => syncWeightTotal("right"));
 
 function getWeights() {
   return {
@@ -95,7 +138,6 @@ function gameOver() {
 
 function updateObstacles() {
   const t = survivalTime;
-
   windForce = 0;
 
   if (t > 8) {
@@ -144,15 +186,13 @@ function update() {
   const totalWeight = weights.left + weights.right;
   const weightDiff = weights.right - weights.left;
 
-  // 양쪽 아래 무게추: 무게중심을 낮춰 안정화
-  const stability = 1 + totalWeight * 0.55;
+  // 총 무게는 안정화, 좌우 차이는 한쪽 쏠림
+  const stability = 1 + totalWeight * 0.38;
+  const imbalance = weightDiff * 0.00032;
 
-  // 좌우 무게 차이: 한쪽으로 살짝 기울게 함
-  const imbalance = weightDiff * 0.00038;
+  const difficulty = 0.00115 + survivalTime * 0.000017;
 
-  const difficulty = 0.00125 + survivalTime * 0.000018;
-
-  const naturalFall = Math.sin(angle) * difficulty * 3.1 / stability;
+  const naturalFall = Math.sin(angle) * difficulty * 3.0 / stability;
   const randomShake = Math.sin(survivalTime * 2.4) * difficulty / stability;
   const obstacleForce = (windForce + birdHit) / stability;
 
@@ -162,8 +202,7 @@ function update() {
   angularVelocity += obstacleForce;
   angularVelocity += imbalance;
 
-  // 무게추가 많을수록 흔들림 감쇠
-  angularVelocity *= 0.982 - totalWeight * 0.0035;
+  angularVelocity *= 0.982 - totalWeight * 0.0025;
 
   angle += angularVelocity;
   inputPower *= 0.86;
@@ -213,7 +252,16 @@ function getBeamLength() {
 function getBeamBend() {
   const weights = getWeights();
   const totalWeight = weights.left + weights.right;
-  return -(8 + totalWeight * 9);
+
+  // 양수면 화면 아래로 휘어짐
+  return 4 + totalWeight * 4;
+}
+
+function beamYAt(x) {
+  const beamLength = getBeamLength();
+  const bend = getBeamBend();
+  const t = x / (beamLength / 2);
+  return bend * (1 - t * t);
 }
 
 function drawCurvedBeam() {
@@ -227,15 +275,13 @@ function drawCurvedBeam() {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
-  // 그림자
   ctx.beginPath();
   ctx.moveTo(-beamLength / 2, 4);
   ctx.quadraticCurveTo(0, bend + 8, beamLength / 2, 4);
-  ctx.strokeStyle = "rgba(0,0,0,0.24)";
+  ctx.strokeStyle = "rgba(0,0,0,0.22)";
   ctx.lineWidth = 30;
   ctx.stroke();
 
-  // 바깥 목재
   ctx.beginPath();
   ctx.moveTo(-beamLength / 2, 0);
   ctx.quadraticCurveTo(0, bend, beamLength / 2, 0);
@@ -243,7 +289,6 @@ function drawCurvedBeam() {
   ctx.lineWidth = 26;
   ctx.stroke();
 
-  // 안쪽 목재
   ctx.beginPath();
   ctx.moveTo(-beamLength / 2, -2);
   ctx.quadraticCurveTo(0, bend - 2, beamLength / 2, -2);
@@ -251,7 +296,6 @@ function drawCurvedBeam() {
   ctx.lineWidth = 17;
   ctx.stroke();
 
-  // 하이라이트
   ctx.beginPath();
   ctx.moveTo(-beamLength / 2 + 10, -8);
   ctx.quadraticCurveTo(0, bend - 9, beamLength / 2 - 10, -8);
@@ -259,10 +303,9 @@ function drawCurvedBeam() {
   ctx.lineWidth = 4;
   ctx.stroke();
 
-  drawWeight(-beamLength / 2 + 42, getWeights().left, bend);
-  drawWeight(beamLength / 2 - 42, getWeights().right, bend);
+  drawWeight(-beamLength / 2 + 42, getWeights().left);
+  drawWeight(beamLength / 2 - 42, getWeights().right);
 
-  // 중심 축
   ctx.fillStyle = "#cbd5e1";
   ctx.beginPath();
   ctx.arc(0, bend, 22, 0, Math.PI * 2);
@@ -275,26 +318,19 @@ function drawCurvedBeam() {
   ctx.restore();
 }
 
-function beamYAt(x) {
-  const beamLength = getBeamLength();
-  const bend = getBeamBend();
-  const t = x / (beamLength / 2);
-  return bend * (1 - t * t);
-}
-
 function drawWeight(x, kg) {
   if (kg <= 0) return;
 
   const y = beamYAt(x);
 
   ctx.save();
-  ctx.translate(x, y + 62);
+  ctx.translate(x, y + 85);
 
   ctx.strokeStyle = "#334155";
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(0, -62);
-  ctx.lineTo(0, -16);
+  ctx.moveTo(0, -85);
+  ctx.lineTo(0, -18);
   ctx.stroke();
 
   ctx.fillStyle = "#374151";
@@ -302,7 +338,7 @@ function drawWeight(x, kg) {
   ctx.lineWidth = 4;
 
   ctx.beginPath();
-  ctx.rect(-30, -16, 60, 55);
+  ctx.rect(-30, -18, 60, 56);
   ctx.fill();
   ctx.stroke();
 
@@ -324,25 +360,25 @@ function drawHayeon() {
   ctx.translate(CX, CY);
   ctx.rotate(angle);
 
-  // 휜 막대 중앙 위에 서게 함
-  ctx.translate(0, bend - 14);
+  ctx.translate(0, bend - 4);
 
-  // 하연이는 막대 기울기와 반대로 몸을 살짝 세우려 함
   const lean = -angle * 0.85;
   ctx.rotate(lean);
 
-  const size = 138;
+  const size = 120;
 
   ctx.shadowColor = "rgba(0,0,0,0.22)";
   ctx.shadowBlur = 8;
   ctx.shadowOffsetY = 5;
 
-  if (hayeonImg.complete) {
-    ctx.drawImage(hayeonImg, -size / 2, -size, size, size);
+  const img = hayeonCleanImg || hayeonImg;
+
+  if (img.complete || hayeonCleanImg) {
+    ctx.drawImage(img, -size / 2, -size + 42, size, size);
   } else {
     ctx.fillStyle = "#84cc16";
     ctx.beginPath();
-    ctx.arc(0, -70, 42, 0, Math.PI * 2);
+    ctx.arc(0, -45, 34, 0, Math.PI * 2);
     ctx.fill();
   }
 
@@ -359,7 +395,7 @@ function drawObstacles() {
 
   if (survivalTime > 12 && state === "playing") {
     ctx.font = "bold 24px Arial";
-    ctx.fillText("🐦", 70 + (survivalTime * 80) % (W - 140), 100);
+    ctx.fillText("💣", 70 + (survivalTime * 80) % (W - 140), 100);
   }
 
   if (fallingBall) {
@@ -379,21 +415,21 @@ function drawStateText() {
 
   if (state === "ready") {
     ctx.fillStyle = "#1f2937";
-    ctx.font = "bold 26px Arial";
-    ctx.fillText("시작 버튼을 누르세요", CX, 48);
+    ctx.font = "bold 25px Arial";
+    ctx.fillText("시작 버튼을 누르세요", CX, 44);
 
     ctx.font = "15px Arial";
-    ctx.fillText("안정추가 많을수록 막대가 휘어 더 안정해집니다.", CX, 78);
+    ctx.fillText("안정추가 많을수록 막대가 아래로 휘어 안정해집니다.", CX, 72);
   }
 
   if (state === "gameover") {
     ctx.fillStyle = "#dc2626";
     ctx.font = "bold 32px Arial";
-    ctx.fillText("GAME OVER", CX, 48);
+    ctx.fillText("GAME OVER", CX, 44);
 
     ctx.fillStyle = "#111827";
     ctx.font = "bold 18px Arial";
-    ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 78);
+    ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 74);
   }
 }
 

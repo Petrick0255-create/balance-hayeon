@@ -37,6 +37,7 @@ header p {
   padding: 9px 14px;
   border-radius: 999px;
   font-weight: 900;
+  font-size: 15px;
 }
 
 main {
@@ -96,6 +97,7 @@ select {
   border-radius: 10px;
   border: 1px solid #cbd5e1;
   font-weight: 800;
+  background: white;
 }
 
 #controlPad {
