@@ -1,6 +1,16 @@
 let saveScore = async () => {};
 let getTop5 = async () => [];
 
+import("./firebase.js")
+  .then(mod => {
+    saveScore = mod.saveScore;
+    getTop5 = mod.getTop5;
+    console.log("Firebase 연결 성공");
+  })
+  .catch(err => {
+    console.warn("Firebase 연결 실패:", err);
+  });
+
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -155,8 +165,8 @@ async function gameOver() {
   rankingLoading = true;
 
   try {
-    //await saveScore(survivalTime);
-    //weeklyTop5 = await getTop5();
+    await saveScore(survivalTime);
+    weeklyTop5 = await getTop5();
   } catch (err) {
     console.error("랭킹 저장/불러오기 실패:", err);
     weeklyTop5 = [];
