@@ -292,7 +292,9 @@ function beamYAt(x) {
   const beamLength = getBeamLength();
   const bend = getBeamBend();
   const t = x / (beamLength / 2);
-  return bend * (1 - t * t);
+
+  // 가운데 0, 양끝 bend
+  return bend * (t * t);
 }
 
 function drawCurvedBeam() {
@@ -306,30 +308,34 @@ function drawCurvedBeam() {
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
 
+  // 그림자
   ctx.beginPath();
-  ctx.moveTo(-beamLength / 2, 4);
-  ctx.quadraticCurveTo(0, bend + 8, beamLength / 2, 4);
+  ctx.moveTo(-beamLength / 2, bend + 5);
+  ctx.quadraticCurveTo(0, 8, beamLength / 2, bend + 5);
   ctx.strokeStyle = "rgba(0,0,0,0.22)";
   ctx.lineWidth = 30;
   ctx.stroke();
 
+  // 바깥 목재
   ctx.beginPath();
-  ctx.moveTo(-beamLength / 2, 0);
-  ctx.quadraticCurveTo(0, bend, beamLength / 2, 0);
+  ctx.moveTo(-beamLength / 2, bend);
+  ctx.quadraticCurveTo(0, 0, beamLength / 2, bend);
   ctx.strokeStyle = "#7c3f13";
   ctx.lineWidth = 26;
   ctx.stroke();
 
+  // 안쪽 목재
   ctx.beginPath();
-  ctx.moveTo(-beamLength / 2, -2);
-  ctx.quadraticCurveTo(0, bend - 2, beamLength / 2, -2);
+  ctx.moveTo(-beamLength / 2, bend - 2);
+  ctx.quadraticCurveTo(0, -2, beamLength / 2, bend - 2);
   ctx.strokeStyle = "#d97706";
   ctx.lineWidth = 17;
   ctx.stroke();
 
+  // 하이라이트
   ctx.beginPath();
-  ctx.moveTo(-beamLength / 2 + 10, -8);
-  ctx.quadraticCurveTo(0, bend - 9, beamLength / 2 - 10, -8);
+  ctx.moveTo(-beamLength / 2 + 10, bend - 8);
+  ctx.quadraticCurveTo(0, -9, beamLength / 2 - 10, bend - 8);
   ctx.strokeStyle = "rgba(255,255,255,0.42)";
   ctx.lineWidth = 4;
   ctx.stroke();
@@ -337,9 +343,10 @@ function drawCurvedBeam() {
   drawWeight(-beamLength / 2 + 42, getWeights().left);
   drawWeight(beamLength / 2 - 42, getWeights().right);
 
+  // 중심 축
   ctx.fillStyle = "#cbd5e1";
   ctx.beginPath();
-  ctx.arc(0, bend, 21, 0, Math.PI * 2);
+  ctx.arc(0, 0, 21, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.strokeStyle = "#334155";
@@ -385,18 +392,17 @@ function drawWeight(x, kg) {
 }
 
 function drawHayeon() {
-  const bend = getBeamBend();
-
   ctx.save();
   ctx.translate(CX, CY);
   ctx.rotate(angle);
 
-  ctx.translate(0, bend - 4);
+  // 막대 가운데 바로 위
+  ctx.translate(0, -6);
 
   const lean = -angle * 0.85;
   ctx.rotate(lean);
 
-  const size = Math.min(112, H * 0.27);
+  const size = Math.min(120, H * 0.30);
 
   ctx.shadowColor = "rgba(0,0,0,0.22)";
   ctx.shadowBlur = 8;
@@ -405,7 +411,7 @@ function drawHayeon() {
   const img = hayeonCleanImg || hayeonImg;
 
   if (img.complete || hayeonCleanImg) {
-    ctx.drawImage(img, -size / 2, -size + 40, size, size);
+    ctx.drawImage(img, -size / 2, -size + 26, size, size);
   } else {
     ctx.fillStyle = "#84cc16";
     ctx.beginPath();
