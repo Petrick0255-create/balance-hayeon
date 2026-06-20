@@ -2,63 +2,65 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>균형잡는 하연이</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-  <header>
-    <div>
-      <h1>균형잡는 하연이</h1>
-      <p>Balance Hayeon</p>
-    </div>
-    <div class="score-box">BEST <span id="bestTime">0.00</span>s</div>
-  </header>
+  <div id="app">
+    <header>
+      <div>
+        <h1>균형잡는 하연이</h1>
+        <p>Balance Hayeon</p>
+      </div>
+      <div class="score-box">BEST <span id="bestTime">0.00</span>s</div>
+    </header>
 
-  <main>
-    <canvas id="gameCanvas"></canvas>
+    <main>
+      <canvas id="gameCanvas"></canvas>
 
-    <section class="panel">
-      <div class="timer">TIME <strong id="timeText">0.00</strong>s</div>
+      <section class="panel">
+        <div class="timer">TIME <strong id="timeText">0.00</strong>s</div>
 
-      <div class="weights">
-        <div>
-          <label>왼쪽 안정추</label>
-          <select id="leftWeight">
-            <option value="0">0kg</option>
-            <option value="1">1kg</option>
-            <option value="2">2kg</option>
-            <option value="3" selected>3kg</option>
-            <option value="4">4kg</option>
-            <option value="5">5kg</option>
-            <option value="6">6kg</option>
-          </select>
+        <div class="weights">
+          <div>
+            <label>왼쪽 안정추</label>
+            <select id="leftWeight">
+              <option value="0">0kg</option>
+              <option value="1">1kg</option>
+              <option value="2">2kg</option>
+              <option value="3" selected>3kg</option>
+              <option value="4">4kg</option>
+              <option value="5">5kg</option>
+              <option value="6">6kg</option>
+            </select>
+          </div>
+
+          <div>
+            <label>오른쪽 안정추</label>
+            <select id="rightWeight">
+              <option value="0">0kg</option>
+              <option value="1">1kg</option>
+              <option value="2">2kg</option>
+              <option value="3" selected>3kg</option>
+              <option value="4">4kg</option>
+              <option value="5">5kg</option>
+              <option value="6">6kg</option>
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label>오른쪽 안정추</label>
-          <select id="rightWeight">
-            <option value="0">0kg</option>
-            <option value="1">1kg</option>
-            <option value="2">2kg</option>
-            <option value="3" selected>3kg</option>
-            <option value="4">4kg</option>
-            <option value="5">5kg</option>
-            <option value="6">6kg</option>
-          </select>
+        <div id="controlPad">
+          <span>← 드래그해서 균형 잡기 →</span>
         </div>
-      </div>
 
-      <div id="controlPad">
-        <span>← 드래그해서 균형 잡기 →</span>
-      </div>
-
-      <div class="buttons">
-        <button id="startBtn">시작</button>
-        <button id="resetBtn">다시</button>
-      </div>
-    </section>
-  </main>
+        <div class="buttons">
+          <button id="startBtn">시작</button>
+          <button id="resetBtn">다시</button>
+        </div>
+      </section>
+    </main>
+  </div>
 
   <script src="js/game.js"></script>
 </body>

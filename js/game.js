@@ -63,7 +63,36 @@ bestTimeText.textContent = bestTime.toFixed(2);
 let dragging = false;
 let lastX = 0;
 
+function getViewportHeight() {
+  if (window.visualViewport) {
+    return window.visualViewport.height;
+  }
+  return window.innerHeight;
+}
+
+function getHeaderHeight() {
+  return window.innerHeight < 700 ? 62 : 72;
+}
+
+function setLayoutSize() {
+  const vh = getViewportHeight();
+  const headerH = getHeaderHeight();
+
+  let panelH = 250;
+
+  if (vh < 700) panelH = 230;
+  if (vh < 620) panelH = 215;
+
+  const canvasH = Math.max(250, vh - headerH - panelH);
+
+  document.documentElement.style.setProperty("--app-height", `${vh}px`);
+  document.documentElement.style.setProperty("--panel-height", `${panelH}px`);
+  document.documentElement.style.setProperty("--canvas-height", `${canvasH}px`);
+}
+
 function resize() {
+  setLayoutSize();
+
   const rect = canvas.getBoundingClientRect();
 
   canvas.width = rect.width * devicePixelRatio;
@@ -74,17 +103,22 @@ function resize() {
   W = rect.width;
   H = rect.height;
   CX = W / 2;
-  CY = H * 0.66;
+  CY = H * 0.67;
 }
 
 window.addEventListener("resize", resize);
+
+if (window.visualViewport) {
+  window.visualViewport.addEventListener("resize", resize);
+  window.visualViewport.addEventListener("scroll", resize);
+}
+
 resize();
 
 function syncWeightTotal(changedSide) {
   const left = Number(leftWeightSelect.value);
   const right = Number(rightWeightSelect.value);
 
-  // 총 안정추는 항상 6kg
   if (changedSide === "left") {
     rightWeightSelect.value = String(6 - left);
   } else {
@@ -186,7 +220,6 @@ function update() {
   const totalWeight = weights.left + weights.right;
   const weightDiff = weights.right - weights.left;
 
-  // 총 무게는 안정화, 좌우 차이는 한쪽 쏠림
   const stability = 1 + totalWeight * 0.38;
   const imbalance = weightDiff * 0.00032;
 
@@ -222,38 +255,36 @@ function drawBackground() {
 
   ctx.fillStyle = "rgba(34,197,94,0.18)";
   ctx.beginPath();
-  ctx.ellipse(CX, H + 30, W * 0.65, 95, 0, 0, Math.PI * 2);
+  ctx.ellipse(CX, H + 28, W * 0.65, 90, 0, 0, Math.PI * 2);
   ctx.fill();
 }
 
 function drawBase() {
   ctx.save();
-  ctx.translate(CX, CY + 96);
+  ctx.translate(CX, CY + 88);
 
   ctx.fillStyle = "#64748b";
   ctx.beginPath();
-  ctx.moveTo(-56, 48);
-  ctx.lineTo(56, 48);
-  ctx.lineTo(18, -82);
-  ctx.lineTo(-18, -82);
+  ctx.moveTo(-52, 44);
+  ctx.lineTo(52, 44);
+  ctx.lineTo(17, -76);
+  ctx.lineTo(-17, -76);
   ctx.closePath();
   ctx.fill();
 
   ctx.fillStyle = "#475569";
-  ctx.fillRect(-82, 48, 164, 20);
+  ctx.fillRect(-76, 44, 152, 18);
 
   ctx.restore();
 }
 
 function getBeamLength() {
-  return Math.min(W * 0.8, 450);
+  return Math.min(W * 0.82, 450);
 }
 
 function getBeamBend() {
   const weights = getWeights();
   const totalWeight = weights.left + weights.right;
-
-  // 양수면 화면 아래로 휘어짐
   return 4 + totalWeight * 4;
 }
 
@@ -308,7 +339,7 @@ function drawCurvedBeam() {
 
   ctx.fillStyle = "#cbd5e1";
   ctx.beginPath();
-  ctx.arc(0, bend, 22, 0, Math.PI * 2);
+  ctx.arc(0, bend, 21, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.strokeStyle = "#334155";
@@ -324,12 +355,12 @@ function drawWeight(x, kg) {
   const y = beamYAt(x);
 
   ctx.save();
-  ctx.translate(x, y + 85);
+  ctx.translate(x, y + 78);
 
   ctx.strokeStyle = "#334155";
   ctx.lineWidth = 5;
   ctx.beginPath();
-  ctx.moveTo(0, -85);
+  ctx.moveTo(0, -78);
   ctx.lineTo(0, -18);
   ctx.stroke();
 
@@ -338,17 +369,17 @@ function drawWeight(x, kg) {
   ctx.lineWidth = 4;
 
   ctx.beginPath();
-  ctx.rect(-30, -18, 60, 56);
+  ctx.rect(-28, -18, 56, 52);
   ctx.fill();
   ctx.stroke();
 
   ctx.fillStyle = "white";
   ctx.textAlign = "center";
-  ctx.font = "bold 23px Arial";
-  ctx.fillText(kg, 0, 13);
+  ctx.font = "bold 21px Arial";
+  ctx.fillText(kg, 0, 11);
 
-  ctx.font = "bold 13px Arial";
-  ctx.fillText("KG", 0, 30);
+  ctx.font = "bold 12px Arial";
+  ctx.fillText("KG", 0, 28);
 
   ctx.restore();
 }
@@ -365,7 +396,7 @@ function drawHayeon() {
   const lean = -angle * 0.85;
   ctx.rotate(lean);
 
-  const size = 120;
+  const size = Math.min(112, H * 0.27);
 
   ctx.shadowColor = "rgba(0,0,0,0.22)";
   ctx.shadowBlur = 8;
@@ -374,7 +405,7 @@ function drawHayeon() {
   const img = hayeonCleanImg || hayeonImg;
 
   if (img.complete || hayeonCleanImg) {
-    ctx.drawImage(img, -size / 2, -size + 42, size, size);
+    ctx.drawImage(img, -size / 2, -size + 40, size, size);
   } else {
     ctx.fillStyle = "#84cc16";
     ctx.beginPath();
@@ -390,12 +421,12 @@ function drawObstacles() {
     ctx.fillStyle = "rgba(59,130,246,0.8)";
     ctx.font = "bold 22px Arial";
     ctx.textAlign = "center";
-    ctx.fillText("💨", CX + Math.sin(survivalTime * 2) * 150, 58);
+    ctx.fillText("💨", CX + Math.sin(survivalTime * 2) * 150, 48);
   }
 
   if (survivalTime > 12 && state === "playing") {
     ctx.font = "bold 24px Arial";
-    ctx.fillText("💣", 70 + (survivalTime * 80) % (W - 140), 100);
+    ctx.fillText("💣", 70 + (survivalTime * 80) % (W - 140), 86);
   }
 
   if (fallingBall) {
@@ -415,21 +446,21 @@ function drawStateText() {
 
   if (state === "ready") {
     ctx.fillStyle = "#1f2937";
-    ctx.font = "bold 25px Arial";
-    ctx.fillText("시작 버튼을 누르세요", CX, 44);
+    ctx.font = `bold ${Math.min(28, W * 0.075)}px Arial`;
+    ctx.fillText("시작 버튼을 누르세요", CX, 42);
 
-    ctx.font = "15px Arial";
-    ctx.fillText("안정추가 많을수록 막대가 아래로 휘어 안정해집니다.", CX, 72);
+    ctx.font = `${Math.min(15, W * 0.038)}px Arial`;
+    ctx.fillText("안정추가 많을수록 막대가 아래로 휘어 안정해집니다.", CX, 70);
   }
 
   if (state === "gameover") {
     ctx.fillStyle = "#dc2626";
-    ctx.font = "bold 32px Arial";
-    ctx.fillText("GAME OVER", CX, 44);
+    ctx.font = "bold 30px Arial";
+    ctx.fillText("GAME OVER", CX, 42);
 
     ctx.fillStyle = "#111827";
     ctx.font = "bold 18px Arial";
-    ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 74);
+    ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 70);
   }
 }
 

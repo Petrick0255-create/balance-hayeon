@@ -2,16 +2,31 @@
   box-sizing: border-box;
 }
 
+html,
 body {
   margin: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
+}
+
+body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   background: radial-gradient(circle at 50% 15%, #fff7ed 0%, #e0f2fe 42%, #dbeafe 100%);
   color: #1f2937;
 }
 
+#app {
+  width: 100vw;
+  height: var(--app-height, 100dvh);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 header {
   height: 72px;
+  flex: 0 0 72px;
   padding: 0 18px;
   background: rgba(30, 41, 59, 0.94);
   color: white;
@@ -23,6 +38,7 @@ header {
 h1 {
   margin: 0;
   font-size: 23px;
+  line-height: 1.15;
 }
 
 header p {
@@ -38,31 +54,39 @@ header p {
   border-radius: 999px;
   font-weight: 900;
   font-size: 15px;
+  white-space: nowrap;
 }
 
 main {
-  height: calc(100vh - 72px);
+  height: calc(var(--app-height, 100dvh) - 72px);
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  overflow: hidden;
 }
 
 canvas {
   width: 100vw;
   max-width: 560px;
-  height: calc(100vh - 315px);
+  height: var(--canvas-height, 360px);
+  flex: 0 0 var(--canvas-height, 360px);
   background: radial-gradient(circle at center, rgba(255,255,255,0.9), rgba(219,234,254,0.35));
 }
 
 .panel {
   width: min(94vw, 560px);
-  padding: 10px 12px 12px;
+  height: var(--panel-height, 250px);
+  flex: 0 0 var(--panel-height, 250px);
+  padding: 8px 12px 10px;
+  overflow: hidden;
 }
 
 .timer {
   text-align: center;
   font-weight: 900;
-  margin-bottom: 8px;
+  margin-bottom: 7px;
+  line-height: 1;
 }
 
 .timer strong {
@@ -73,7 +97,7 @@ canvas {
 .weights {
   display: flex;
   gap: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
 
 .weights div {
@@ -101,7 +125,7 @@ select {
 }
 
 #controlPad {
-  height: 58px;
+  height: 54px;
   border-radius: 999px;
   background: linear-gradient(135deg, #1e293b, #334155);
   color: white;
@@ -111,20 +135,24 @@ select {
   font-weight: 900;
   touch-action: none;
   user-select: none;
-  box-shadow: 0 10px 24px rgba(15,23,42,0.25);
+  box-shadow: 0 8px 20px rgba(15,23,42,0.22);
+}
+
+#controlPad span {
+  pointer-events: none;
 }
 
 .buttons {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
+  margin-top: 9px;
 }
 
 button {
   flex: 1;
   border: none;
   border-radius: 999px;
-  padding: 12px;
+  padding: 11px;
   font-weight: 900;
   font-size: 15px;
   background: white;
@@ -135,4 +163,32 @@ button {
 #startBtn {
   background: #fb923c;
   color: white;
+}
+
+@media (max-height: 700px) {
+  header {
+    height: 62px;
+    flex-basis: 62px;
+  }
+
+  h1 {
+    font-size: 20px;
+  }
+
+  .score-box {
+    font-size: 14px;
+    padding: 8px 12px;
+  }
+
+  .timer strong {
+    font-size: 24px;
+  }
+
+  #controlPad {
+    height: 48px;
+  }
+
+  button {
+    padding: 9px;
+  }
 }
