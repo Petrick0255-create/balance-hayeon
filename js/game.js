@@ -462,10 +462,9 @@ function drawStateText() {
   if (state === "ready") {
     ctx.fillStyle = "#1f2937";
     ctx.font = `bold ${Math.min(28, W * 0.075)}px Arial`;
-    ctx.fillText("화면을 터치해 시작", CX, 42);
-
-    ctx.fillText("터치하여 시작",CX,70
-  );
+    ctx.fillText("터치하여 시작", CX, 52);
+    return;
+  }
 
   if (state === "gameover") {
     ctx.fillStyle = "#dc2626";
@@ -476,10 +475,11 @@ function drawStateText() {
     ctx.font = "bold 18px Arial";
     ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 70);
     ctx.fillText("다시 터치하면 재시작", CX, 96);
+
     ctx.fillStyle = "#111827";
     ctx.font = "bold 16px Arial";
     ctx.fillText("이번 주 TOP 5", CX, 128);
-    
+
     ctx.font = "14px Arial";
 
     if (rankingLoading) {
@@ -489,7 +489,7 @@ function drawStateText() {
     } else {
       weeklyTop5.forEach((item, i) => {
         ctx.fillText(
-          `${i + 1}위  ${Number(item.score).toFixed(2)}초`,
+          `${i + 1}위 ${Number(item.score).toFixed(2)}초`,
           CX,
           154 + i * 22
         );
