@@ -264,50 +264,65 @@ function drawPlatform() {
 }
 
 function drawPoleAndHayeon() {
-  const poleLength = Math.min(H * 0.46, 250);
-  const characterSize = Math.min(112, H * 0.26);
+  const poleLength = Math.min(H * 0.48, 270);
+  const characterSize = Math.min(122, H * 0.29);
 
   ctx.save();
   ctx.translate(CX, CY);
   ctx.rotate(angle);
 
-  // 장대
+  // 얇고 긴 장대
   ctx.lineCap = "round";
 
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.lineTo(0, -poleLength);
   ctx.strokeStyle = "#7c3f13";
-  ctx.lineWidth = 14;
+  ctx.lineWidth = 10;
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(-3, -8);
-  ctx.lineTo(-3, -poleLength + 8);
+  ctx.moveTo(-2, -8);
+  ctx.lineTo(-2, -poleLength + 8);
   ctx.strokeStyle = "#f59e0b";
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 3;
   ctx.stroke();
 
-  // 바닥 접점
+  // 바닥 접점: 일부러 작게
   ctx.fillStyle = "#cbd5e1";
   ctx.beginPath();
-  ctx.arc(0, 0, 17, 0, Math.PI * 2);
+  ctx.arc(0, 0, 10, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.strokeStyle = "#334155";
-  ctx.lineWidth = 5;
+  ctx.lineWidth = 4;
   ctx.stroke();
 
-  // 하연이
+  // 장대 꼭대기의 작은 발판
   ctx.save();
   ctx.translate(0, -poleLength);
 
-  const lean = -angle * 0.65;
+  ctx.beginPath();
+  ctx.moveTo(-22, 0);
+  ctx.lineTo(22, 0);
+  ctx.strokeStyle = "#7c3f13";
+  ctx.lineWidth = 7;
+  ctx.lineCap = "round";
+  ctx.stroke();
+
+  ctx.restore();
+
+  // 하연이
+  ctx.save();
+  ctx.translate(0, -poleLength - 4);
+
+  // 하연이가 버티려고 반대로 몸을 세우는 느낌
+  const lean = -angle * 1.15;
   ctx.rotate(lean);
 
-  ctx.shadowColor = "rgba(0,0,0,0.22)";
-  ctx.shadowBlur = 8;
-  ctx.shadowOffsetY = 5;
+  ctx.shadowColor = "rgba(0,0,0,0.24)";
+  ctx.shadowBlur = 9;
+  ctx.shadowOffsetY = 6;
 
   const img = hayeonCleanImg || hayeonImg;
 
@@ -315,7 +330,7 @@ function drawPoleAndHayeon() {
     ctx.drawImage(
       img,
       -characterSize / 2,
-      -characterSize + 30,
+      -characterSize + 22,
       characterSize,
       characterSize
     );
