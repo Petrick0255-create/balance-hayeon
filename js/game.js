@@ -515,4 +515,21 @@ function loop() {
   requestAnimationFrame(loop);
 }
 
+function handleTap(e) {
+  e.preventDefault();
+
+  const x = e.clientX ?? W / 2;
+  const side = x < window.innerWidth / 2 ? "left" : "right";
+
+  tapImpulse(side);
+}
+
+document.addEventListener("pointerdown", handleTap, { passive: false });
+
+resetBtn.onclick = e => {
+  e.stopPropagation();
+  resetGame();
+  vibrate(20);
+};
+
 loop();
