@@ -52,20 +52,17 @@ export async function saveScore(score) {
 }
 
 export async function getTop5() {
-  const weekKey = getWeekKey();
 
-  console.log("랭킹 조회 weekKey:", weekKey);
-
-  const q = query(
-    collection(db, "rankings"),
-    where("weekKey", "==", weekKey),
-    orderBy("score", "desc"),
-    limit(5)
+  const snapshot = await getDocs(
+    collection(db, "rankings")
   );
 
-  const snapshot = await getDocs(q);
+  const scores = snapshot.docs
+    .map(doc => doc.data())
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 5);
 
-  console.log("랭킹 개수:", snapshot.size);
+  console.log("TOP5", scores);
 
-  return snapshot.docs.map(doc => doc.data());
+  return scores;
 }
