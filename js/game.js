@@ -3,8 +3,6 @@ const ctx = canvas.getContext("2d");
 
 const timeText = document.getElementById("timeText");
 const bestTimeText = document.getElementById("bestTime");
-const controlPad = document.getElementById("controlPad");
-const startBtn = document.getElementById("startBtn");
 const resetBtn = document.getElementById("resetBtn");
 
 let W, H, CX, CY;
@@ -20,7 +18,6 @@ hayeonImg.onload = () => {
 
   temp.width = hayeonImg.width;
   temp.height = hayeonImg.height;
-
   tctx.drawImage(hayeonImg, 0, 0);
 
   const imgData = tctx.getImageData(0, 0, temp.width, temp.height);
@@ -44,7 +41,6 @@ let state = "ready";
 
 let angle = 0;
 let angularVelocity = 0;
-let inputPower = 0;
 
 let startTime = 0;
 let survivalTime = 0;
@@ -53,11 +49,16 @@ let windForce = 0;
 let hitForce = 0;
 let fallingBall = null;
 
+let tapFlash = null;
+
 let bestTime = Number(localStorage.getItem("balanceHayeonBest") || 0);
 bestTimeText.textContent = bestTime.toFixed(2);
 
-let dragging = false;
-let lastX = 0;
+function vibrate(ms = 18) {
+  if (navigator.vibrate) {
+    navigator.vibrate(ms);
+  }
+}
 
 function getViewportHeight() {
   return window.visualViewport ? window.visualViewport.height : window.innerHeight;
@@ -71,11 +72,11 @@ function setLayoutSize() {
   const vh = getViewportHeight();
   const headerH = getHeaderHeight();
 
-  let panelH = 170;
-  if (vh < 700) panelH = 155;
-  if (vh < 620) panelH = 145;
+  let panelH = 150;
+  if (vh < 700) panelH = 140;
+  if (vh < 620) panelH = 130;
 
-  const canvasH = Math.max(310, vh - headerH - panelH);
+  const canvasH = Math.max(320, vh - headerH - panelH);
 
   document.documentElement.style.setProperty("--app-height", `${vh}px`);
   document.documentElement.style.setProperty("--panel-height", `${panelH}px`);
@@ -111,11 +112,11 @@ function resetGame() {
   state = "ready";
   angle = 0;
   angularVelocity = 0;
-  inputPower = 0;
   survivalTime = 0;
   windForce = 0;
   hitForce = 0;
   fallingBall = null;
+  tapFlash = null;
   timeText.textContent = "0.00";
 }
 
@@ -123,16 +124,17 @@ function startGame() {
   state = "playing";
   angle = 0;
   angularVelocity = 0;
-  inputPower = 0;
   survivalTime = 0;
   windForce = 0;
   hitForce = 0;
   fallingBall = null;
+  tapFlash = null;
   startTime = performance.now();
 }
 
 function gameOver() {
   state = "gameover";
+  vibrate(80);
 
   if (survivalTime > bestTime) {
     bestTime = survivalTime;
@@ -140,6 +142,50 @@ function gameOver() {
     bestTimeText.textContent = bestTime.toFixed(2);
   }
 }
+
+function tapImpulse(side) {
+  if (state === "ready" || state === "gameover") {
+    startGame();
+    vibrate(25);
+    return;
+  }
+
+  if (state !== "playing") return;
+
+  // 왼쪽 터치 = 왼쪽에서 톡 쳐서 오른쪽으로 세움
+  // 오른쪽 터치 = 오른쪽에서 톡 쳐서 왼쪽으로 세움
+  const force = 0.035;
+
+  if (side === "left") {
+    angularVelocity += force;
+  } else {
+    angularVelocity -= force;
+  }
+
+  tapFlash = {
+    side,
+    time: performance.now()
+  };
+
+  vibrate(18);
+}
+
+function handleTap(e) {
+  e.preventDefault();
+
+  const x = e.clientX ?? e.touches?.[0]?.clientX ?? W / 2;
+  const side = x < window.innerWidth / 2 ? "left" : "right";
+
+  tapImpulse(side);
+}
+
+document.addEventListener("pointerdown", handleTap, { passive: false });
+
+resetBtn.onclick = e => {
+  e.stopPropagation();
+  resetGame();
+  vibrate(20);
+};
 
 function updateObstacles() {
   const t = survivalTime;
@@ -172,6 +218,7 @@ function updateObstacles() {
       const side = fallingBall.x < CX ? -1 : 1;
       angularVelocity += side * 0.042;
       fallingBall = null;
+      vibrate(35);
     }
 
     if (fallingBall && fallingBall.y > H + 60) {
@@ -198,15 +245,11 @@ function update() {
   angularVelocity += randomShake;
   angularVelocity += obstacleForce;
 
-  angularVelocity += inputPower * 0.0007;
-
   angularVelocity *= 0.986;
 
   angle += angularVelocity;
 
-  inputPower *= 0.84;
-
-  if (Math.abs(angle) > 0.82) {
+  if (Math.abs(angle) > 0.78) {
     gameOver();
   }
 }
@@ -223,6 +266,42 @@ function drawBackground() {
   ctx.beginPath();
   ctx.ellipse(CX, H + 24, W * 0.65, 90, 0, 0, Math.PI * 2);
   ctx.fill();
+}
+
+function drawTapZones() {
+  ctx.save();
+
+  ctx.globalAlpha = 0.08;
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(0, 0, W / 2, H);
+  ctx.fillRect(W / 2, 0, W / 2, H);
+
+  ctx.globalAlpha = 0.22;
+  ctx.fillStyle = "#334155";
+  ctx.font = "bold 34px Arial";
+  ctx.textAlign = "center";
+  ctx.fillText("◀", W * 0.18, H * 0.52);
+  ctx.fillText("▶", W * 0.82, H * 0.52);
+
+  if (tapFlash) {
+    const elapsed = performance.now() - tapFlash.time;
+    const alpha = Math.max(0, 1 - elapsed / 180);
+
+    if (alpha > 0) {
+      ctx.globalAlpha = alpha * 0.22;
+      ctx.fillStyle = tapFlash.side === "left" ? "#38bdf8" : "#fb923c";
+
+      if (tapFlash.side === "left") {
+        ctx.fillRect(0, 0, W / 2, H);
+      } else {
+        ctx.fillRect(W / 2, 0, W / 2, H);
+      }
+    } else {
+      tapFlash = null;
+    }
+  }
+
+  ctx.restore();
 }
 
 function drawPlatform() {
@@ -258,8 +337,6 @@ function drawPlatform() {
   ctx.lineWidth = 4;
   ctx.stroke();
 
-  ctx.shadowBlur = 0;
-
   ctx.restore();
 }
 
@@ -271,7 +348,6 @@ function drawPoleAndHayeon() {
   ctx.translate(CX, CY);
   ctx.rotate(angle);
 
-  // 얇고 긴 장대
   ctx.lineCap = "round";
 
   ctx.beginPath();
@@ -288,7 +364,6 @@ function drawPoleAndHayeon() {
   ctx.lineWidth = 3;
   ctx.stroke();
 
-  // 바닥 접점: 일부러 작게
   ctx.fillStyle = "#cbd5e1";
   ctx.beginPath();
   ctx.arc(0, 0, 10, 0, Math.PI * 2);
@@ -298,13 +373,12 @@ function drawPoleAndHayeon() {
   ctx.lineWidth = 4;
   ctx.stroke();
 
-  // 장대 꼭대기의 작은 발판
   ctx.save();
   ctx.translate(0, -poleLength);
 
   ctx.beginPath();
-  ctx.moveTo(-22, 0);
-  ctx.lineTo(22, 0);
+  ctx.moveTo(-20, 0);
+  ctx.lineTo(20, 0);
   ctx.strokeStyle = "#7c3f13";
   ctx.lineWidth = 7;
   ctx.lineCap = "round";
@@ -312,11 +386,9 @@ function drawPoleAndHayeon() {
 
   ctx.restore();
 
-  // 하연이
   ctx.save();
   ctx.translate(0, -poleLength - 4);
 
-  // 하연이가 버티려고 반대로 몸을 세우는 느낌
   const lean = -angle * 1.15;
   ctx.rotate(lean);
 
@@ -376,10 +448,10 @@ function drawStateText() {
   if (state === "ready") {
     ctx.fillStyle = "#1f2937";
     ctx.font = `bold ${Math.min(28, W * 0.075)}px Arial`;
-    ctx.fillText("시작 버튼을 누르세요", CX, 42);
+    ctx.fillText("화면을 터치해 시작", CX, 42);
 
     ctx.font = `${Math.min(15, W * 0.038)}px Arial`;
-    ctx.fillText("외나무막대 위 장대가 넘어지지 않게 버티세요.", CX, 70);
+    ctx.fillText("왼쪽/오른쪽을 톡톡 쳐서 균형을 잡으세요.", CX, 70);
   }
 
   if (state === "gameover") {
@@ -390,6 +462,7 @@ function drawStateText() {
     ctx.fillStyle = "#111827";
     ctx.font = "bold 18px Arial";
     ctx.fillText(`${survivalTime.toFixed(2)}초 버팀`, CX, 70);
+    ctx.fillText("다시 터치하면 재시작", CX, 96);
   }
 }
 
@@ -397,6 +470,7 @@ function draw() {
   ctx.clearRect(0, 0, W, H);
 
   drawBackground();
+  drawTapZones();
   drawObstacles();
   drawPlatform();
   drawPoleAndHayeon();
@@ -408,40 +482,5 @@ function loop() {
   draw();
   requestAnimationFrame(loop);
 }
-
-controlPad.addEventListener("pointerdown", e => {
-  dragging = true;
-  lastX = e.clientX;
-  controlPad.setPointerCapture(e.pointerId);
-});
-
-controlPad.addEventListener("pointermove", e => {
-  if (!dragging || state !== "playing") return;
-
-  const dx = e.clientX - lastX;
-  inputPower += dx;
-
-  lastX = e.clientX;
-});
-
-controlPad.addEventListener("pointerup", e => {
-  dragging = false;
-  controlPad.releasePointerCapture(e.pointerId);
-});
-
-controlPad.addEventListener("pointercancel", e => {
-  dragging = false;
-  controlPad.releasePointerCapture(e.pointerId);
-});
-
-document.addEventListener("keydown", e => {
-  if (state !== "playing") return;
-
-  if (e.key === "ArrowLeft") inputPower -= 14;
-  if (e.key === "ArrowRight") inputPower += 14;
-});
-
-startBtn.onclick = startGame;
-resetBtn.onclick = resetGame;
 
 loop();

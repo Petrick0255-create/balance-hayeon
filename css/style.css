@@ -1,5 +1,6 @@
 * {
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html,
@@ -8,6 +9,8 @@ body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 body {
@@ -71,12 +74,13 @@ canvas {
   height: var(--canvas-height, 420px);
   flex: 0 0 var(--canvas-height, 420px);
   background: radial-gradient(circle at center, rgba(255,255,255,0.9), rgba(219,234,254,0.35));
+  touch-action: manipulation;
 }
 
 .panel {
   width: min(94vw, 560px);
-  height: var(--panel-height, 170px);
-  flex: 0 0 var(--panel-height, 170px);
+  height: var(--panel-height, 150px);
+  flex: 0 0 var(--panel-height, 150px);
   padding: 10px 12px 12px;
   overflow: hidden;
 }
@@ -84,7 +88,7 @@ canvas {
 .timer {
   text-align: center;
   font-weight: 900;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .timer strong {
@@ -92,40 +96,38 @@ canvas {
   color: #7c2d12;
 }
 
-#controlPad {
-  height: 58px;
-  border-radius: 999px;
-  background: rgba(30,41,59,0.08);
-  border: 2px dashed rgba(30,41,59,0.15);
-
-  touch-action: none;
-  user-select: none;
-  -webkit-user-select: none;
+.tap-guide {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
 }
 
-#controlPad span {
-  pointer-events: none;
+.tap-guide div {
+  flex: 1;
+  height: 54px;
+  border-radius: 18px;
+  background: rgba(30, 41, 59, 0.1);
+  border: 2px dashed rgba(30, 41, 59, 0.18);
+  color: #334155;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .buttons {
   display: flex;
   gap: 10px;
-  margin-top: 10px;
 }
 
 button {
   flex: 1;
   border: none;
   border-radius: 999px;
-  padding: 12px;
+  padding: 11px;
   font-weight: 900;
   font-size: 15px;
   background: white;
   color: #1f2937;
   box-shadow: 0 5px 14px rgba(15,23,42,0.15);
-}
-
-#startBtn {
-  background: #fb923c;
-  color: white;
 }
