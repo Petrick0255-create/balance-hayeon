@@ -52,6 +52,7 @@ export async function saveScore(score) {
 }
 
 export async function getTop5() {
+  const currentWeekKey = getWeekKey();
 
   const snapshot = await getDocs(
     collection(db, "rankings")
@@ -59,10 +60,11 @@ export async function getTop5() {
 
   const scores = snapshot.docs
     .map(doc => doc.data())
-    .sort((a, b) => b.score - a.score)
+    .filter(item => item.weekKey === currentWeekKey)
+    .sort((a, b) => Number(b.score) - Number(a.score))
     .slice(0, 5);
 
-  console.log("TOP5", scores);
+  console.log("이번 주 TOP5", currentWeekKey, scores);
 
   return scores;
 }
